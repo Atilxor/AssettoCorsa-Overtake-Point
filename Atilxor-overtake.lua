@@ -221,7 +221,7 @@ local speedWarning = 0
 
         ui.pushStyleVar(ui.StyleVar.Alpha, 1 - speedWarning)
         ui.pushFont(ui.Font.Main)
-        ui.text('Atilxor\'')
+        ui.text('Made By Atilxor\'')
         ui.text("Highest Score: " .. highestScore .. " pts")
         ui.popFont()
         ui.popStyleVar()
