@@ -1,15 +1,18 @@
 -- Author: Atilxor
 -- Version: 0.5
 
+
 local requiredSpeed = 95
 
-
+-- تابع پیش‌زمینه (prepare) برای اجرا پیش از شروع اصلی
 function script.prepare(dt)
+    -- نمایش سرعت ماشین بازیکن در کنسول اختصاصی
     ac.debug("speed", ac.getCarState(1).speedKmh)
+    -- بررسی شرط برای ادامه اجرا
     return ac.getCarState(1).speedKmh > 60
 end
 
--- Event state:
+-- وضعیت رویداد:
 local timePassed = 0
 local totalScore = 0
 local comboMeter = 1
@@ -19,38 +22,53 @@ local dangerouslySlowTimer = 0
 local carsState = {}
 local wheelsWarningTimeout = 0
 
+-- تابع بروزرسانی (update) برای اجرا در هر فریم
 function script.update(dt)
+    -- اگر زمان گذشته برابر صفر باشد، پیام "شروع!" نمایش داده می‌شود
     if timePassed == 0 then
-        addMessage("Let’s go!", 0)
+        addMessage("بیایید شروع کنیم!", 0)
     end
 
+    -- دریافت وضعیت ماشین بازیکن
     local player = ac.getCarState(1)
+
+    -- اگر میزان دیگرانه‌گری (engineLifeLeft) کمتر از 1 شود
     if player.engineLifeLeft < 1 then
+        -- اگر مجموع امتیازات بیشتر از بالاترین امتیاز ثبت شده باشد، بالاترین امتیاز به مقدار صحیح محاسبه می‌شود
         if totalScore > highestScore then
             highestScore = math.floor(totalScore)
-            ac.sendChatMessage("scored " .. totalScore .. " points.")
+            -- ارسال پیام چت به بازی با امتیاز به همراه متن
+            ac.sendChatMessage("امتیاز " .. totalScore .. " امتیاز را کسب کرد.")
         end
+        -- مجموع امتیازات صفر می‌شود و میزان دیگرانه‌گری به حالت اولیه برگشت می‌شود
         totalScore = 0
         comboMeter = 1
         return
     end
 
+    -- افزایش زمان گذشته با مقدار زمان گذشته از آخرین فریم
     timePassed = timePassed + dt
 
+    -- محاسبه میزان کاهش کمبو به ازای گذشت زمان و سرعت ماشین
     local comboFadingRate = 0.5 * math.lerp(1, 0.1, math.lerpInvSat(player.speedKmh, 80, 200)) + player.wheelsOutside
     comboMeter = math.max(1, comboMeter - dt * comboFadingRate)
 
+    -- دریافت وضعیت شبیه‌ساز بازی
     local sim = ac.getSimState()
+
+    -- تعداد ماشین‌ها به تعداد وضعیت ماشین‌ها در آرایه ماشین‌ها افزوده می‌شود
     while sim.carsCount > #carsState do
         carsState[#carsState + 1] = {}
     end
 
+    -- اگر زمان محدودیت هشدار چرخ‌ها (wheelsWarningTimeout) بیشتر از صفر باشد، کاهش می‌یابد
     if wheelsWarningTimeout > 0 then
         wheelsWarningTimeout = wheelsWarningTimeout - dt
     elseif player.wheelsOutside > 0 then
+        -- اگر چرخ‌های ماشین خارج از مسیر باشند، پیام هشدار نمایش داده می‌شود
         if wheelsWarningTimeout == 0 then
         end
-        addMessage("Car is outside", -1)
+        addMessage("ماشین خارج از مسیر است", -1)
         wheelsWarningTimeout = 60
     end
 
