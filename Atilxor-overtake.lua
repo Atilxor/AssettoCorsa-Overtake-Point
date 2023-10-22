@@ -82,7 +82,7 @@ function script.update(dt)
             comboMeter = 1
         else
             if dangerouslySlowTimer == 0 then
-                addMessage("Too slow!", -1)
+                addMessage("Speed Ro Bishtar Kon!", -1)
             end
         end
         dangerouslySlowTimer = dangerouslySlowTimer + dt
